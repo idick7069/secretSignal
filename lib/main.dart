@@ -56,8 +56,9 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  String a = "";
+  String _currentAnswer = "";
   List<Words> _list = [];
+  List<Words> _originList = [];
 
   @override
   void initState() {
@@ -78,6 +79,12 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _setCurrentAnswer(String currentAnswer) {
+    setState(() {
+      _currentAnswer = currentAnswer;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -87,6 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
+      resizeToAvoidBottomPadding: false,
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
@@ -113,72 +121,65 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              'You have pushed the button this many times:',
+              '最終答案：',
             ),
             Text(
-              '$_counter',
-              style: Theme
-                  .of(context)
-                  .textTheme
-                  .headline4,
+              '$_currentAnswer',
+              style: Theme.of(context).textTheme.headline4,
             ),
             Expanded(
                 child: GridView.builder(
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 5, //每行三列等
-                        childAspectRatio: 2.0
-                    ),
+                        childAspectRatio: 2.0),
                     itemCount: _list.length,
                     itemBuilder: (context, index) {
-                      //如果显示到最后一个并且Icon总数小于200时继续获取数据
                       return Card(
                           shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(
-                                  Radius.circular(14.0))),
-
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(14.0))),
                           child: Container(
                             alignment: Alignment.center,
-                            color: _getColor(_list[index].highlight),
-                            child: Text(
-                                _list[index].name,
-                                textAlign: TextAlign.center
-                            ),
-                          )
-                      );
+                            color: _getColor(
+                                _list[index].highlight, _list[index].name),
+                            child: Text(_list[index].name,
+                                textAlign: TextAlign.center),
+                          ));
                     })),
             Padding(
-                padding: EdgeInsets.all(29.0),
+                padding: EdgeInsets.all(20.0),
                 child: Column(children: <Widget>[
                   TextField(
                     decoration: InputDecoration(labelText: '第一項'),
                     controller: _editingFirstController,
+                    onChanged: (text) => {checkInMatch(text, 0)},
                   ),
                   TextField(
                     decoration: InputDecoration(labelText: '第二項'),
                     controller: _editingSecondController,
+                    onChanged: (text) => {checkInMatch(text, 1)},
                   ),
                   TextField(
                     decoration: InputDecoration(labelText: '第三項'),
                     controller: _editingThirdController,
+                    onChanged: (text) => {checkInMatch(text, 2)},
                   ),
                   TextField(
                     decoration: InputDecoration(labelText: '第四項'),
                     controller: _editingFourthController,
+                    onChanged: (text) => {checkInMatch(text, 3)},
                   ),
                   TextField(
                     decoration: InputDecoration(labelText: '第五項'),
                     controller: _editingFiveController,
+                    onChanged: (text) => {checkInMatch(text, 4)},
                   ),
                 ])),
             RaisedButton(
               color: Colors.blue,
               textColor: Colors.white,
               child: Text("開始搜尋"),
-              onPressed: () =>
-              {
-                // print(_editingFirstController.text)
-                print(a)
-              },
+              onPressed: () => {checkInMatch(_editingFirstController.text, 1)},
             )
           ],
         ),
@@ -206,6 +207,10 @@ class _MyHomePageState extends State<MyHomePage> {
     String jsonString = await _loadFromAsset();
     _list = List<Words>.from(
         json.decode(jsonString).map((data) => Words.fromJson(data))).toList();
+    _originList.clear();
+    _list.forEach((element) {
+      _originList.add(new Words(element.name, element.highlight));
+    });
   }
 
   void showSnackBar(BuildContext context) {
@@ -225,7 +230,6 @@ class _MyHomePageState extends State<MyHomePage> {
     return Container(
       alignment: Alignment.center,
       child: Column(
-        //竖向排布的布局
         children: <Widget>[
           Text(_list[index].name),
         ],
@@ -234,11 +238,46 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Color _getColor(bool match) {
-    print(match);
-    if (match)
+  Color _getColor(bool match, String text) {
+    if (match) {
+      // debugPrint('設定為紅色: $text');
       return Colors.red;
-    else
-      return Colors.white;
+    } else
+      // print('設定為藍色 $text');
+      return Colors.transparent;
+  }
+
+  //index = 1
+  Future checkInMatch(String text, int index) async {
+    _list.clear();
+    _originList.forEach((element) {
+      _list.add(new Words(element.name, element.highlight));
+    });
+
+    List<int> charArray = [];
+
+    text.split('').forEach((textElement) {
+      //textElement = a, c ,g , d
+      _list.asMap().forEach((i, wordElement) {
+        List<String> word = wordElement.name.split('');
+        if (word[index] == textElement) {
+          charArray.add(i);
+        }
+      });
+
+      _list.asMap().forEach((listKey, value) {
+        charArray.asMap().forEach((arrayKey, arrayValue) {
+          if (listKey == arrayValue) {
+            _list[listKey].highlight = true;
+          }
+        });
+      });
+    });
+
+    setState(() {});
+    // var selectedItem = _list.where((element) => element.highlight = true);
+    // if (selectedItem.length == 1) {
+    //   this._setCurrentAnswer(selectedItem.first.name);
+    // }
   }
 }
