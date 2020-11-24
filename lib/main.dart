@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: '文字解碼'),
     );
   }
 }
@@ -66,17 +66,6 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     _loadFromAsset();
     parseJson();
-  }
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
   }
 
   void _setCurrentAnswer(String currentAnswer) {
@@ -130,8 +119,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Expanded(
                 child: GridView.builder(
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 5, //每行三列等
-                        childAspectRatio: 2.0),
+                        crossAxisCount: 5),
                     itemCount: _list.length,
                     itemBuilder: (context, index) {
                       return Card(
@@ -183,11 +171,6 @@ class _MyHomePageState extends State<MyHomePage> {
             )
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
       ),
       // This trailing comma makes auto-formatting nicer for build methods.
     );
@@ -275,9 +258,9 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     setState(() {});
-    // var selectedItem = _list.where((element) => element.highlight = true);
-    // if (selectedItem.length == 1) {
-    //   this._setCurrentAnswer(selectedItem.first.name);
-    // }
+    var selectedItem = _list.where((element) => element.highlight == true);
+    if (selectedItem.length == 1) {
+      this._setCurrentAnswer(selectedItem.first.name);
+    }
   }
 }
